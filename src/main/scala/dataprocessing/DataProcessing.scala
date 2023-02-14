@@ -49,14 +49,15 @@ object DataProcessing extends App {
   private val customersPreparedDF = customersDF.drop("start_date", "end_date")
 
 
-   private val tLogspreparedDF = tLogsDF
+   private val tLogsPreparedDF = tLogsDF
      .join(customersPreparedDF, "customer_id")
      .join(storePreparedDF, "store_id")
      .join(productsPreparedDF, productsPreparedDF.col("prod_id") === tLogsDF.col("prod_purch")).drop(tLogsDF.col("prod_purch"))
      .join(calendarPreparedDF, calendarPreparedDF.col("week") === tLogsDF.col("purch_week")).drop("week")
 
 
-   val weeklySales = tLogspreparedDF.groupBy("purch_week", "prod_id").agg(count("prod_id").as("total_sales")).orderBy("purch_week")
-   weeklySales.show()
-   weeklySales.selectExpr("sum(total_sales)").show()
+   private val weeklySalesDF = tLogsPreparedDF.groupBy("purch_week", "prod_id").agg(count("prod_id").as("total_weekly_sales")).orderBy("purch_week")
+
+   private val tLogsWithWeeklySales = tLogsPreparedDF.join(weeklySalesDF, Seq("purch_week", "prod_id"))
+
 }
