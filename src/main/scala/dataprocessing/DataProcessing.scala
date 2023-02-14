@@ -39,14 +39,15 @@ object DataProcessing extends App {
   private val productsDF = readCsvDF("products")
   private val storesDF = readCsvDF("stores")
 
-  private val yearWeekConversion = col("week_of_year") +  ((col("calendar_year") - 2018)  * 52)
-  private val calendarPreparedDF = calendarDF.drop("calendar_day", "calendar_week", "day_of_week").withColumn("week", yearWeekConversion)
-  private val productsPreparedDF = productsDF.selectExpr("prod_id", "subclass_labels", "subclass_coefficients", "prod_base_price", "pareto_weights", "margin")
+  private val startingYear = 2018
+  private val weeksPerYear = 52
+  private val calendarDFWeekIndex = 1
+  private val yearWeekConversion = (col("week_of_year") - calendarDFWeekIndex) +  ((col("calendar_year") - startingYear)  * weeksPerYear)
+  private val calendarPreparedDF = calendarDF.drop("calendar_day", "calendar_week", "day_of_week").dropDuplicates("week_of_year", "calendar_year").withColumn("week", yearWeekConversion)
+  private val productsPreparedDF = productsDF.select("prod_id", "subclass_labels", "subclass_coefficients", "prod_base_price", "pareto_weights", "margin")
   private val storePreparedDF = storesDF.drop("store_label")
   private val customersPreparedDF = customersDF.drop("start_date", "end_date")
 
-  calendarPreparedDF.printSchema()
-  calendarPreparedDF.orderBy(col("calendar_year").desc).show()
 
    private val tLogspreparedDF = tLogsDF
      .join(customersPreparedDF, "customer_id")
@@ -54,13 +55,8 @@ object DataProcessing extends App {
      .join(productsPreparedDF, productsPreparedDF.col("prod_id") === tLogsDF.col("prod_purch")).drop(tLogsDF.col("prod_purch"))
      .join(calendarPreparedDF, calendarPreparedDF.col("week") === tLogsDF.col("purch_week")).drop("week")
 
-   tLogspreparedDF.printSchema()
-   tLogspreparedDF.orderBy(col("calendar_year").desc, col("week_of_year").asc).show()
 
-   val weeklySales = tLogspreparedDF.groupBy("purch_week", "prod_id").agg(count("prod_id").as("total_sales")).orderBy("week_year")
+   val weeklySales = tLogspreparedDF.groupBy("purch_week", "prod_id").agg(count("prod_id").as("total_sales")).orderBy("purch_week")
    weeklySales.show()
    weeklySales.selectExpr("sum(total_sales)").show()
-   tLogspreparedDF.select(count("*")).show()
-   tLogsDF.select(count("*")).show()
-   println(s"tlogs : ${tLogsDF.count()} tlogsPrepared ${tLogspreparedDF.count()} ")
 }
