@@ -1,6 +1,6 @@
 package dataprocessing
 
-import org.apache.spark.sql.functions.{col, count, sum}
+import org.apache.spark.sql.functions.{col, count, lit, sum, approxQuantile}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{DoubleType, IntegerType, StringType, StructField, StructType}
 
@@ -42,22 +42,37 @@ object DataProcessing extends App {
   private val startingYear = 2018
   private val weeksPerYear = 52
   private val calendarDFWeekIndex = 1
-  private val yearWeekConversion = (col("week_of_year") - calendarDFWeekIndex) +  ((col("calendar_year") - startingYear)  * weeksPerYear)
-  private val calendarPreparedDF = calendarDF.drop("calendar_day", "calendar_week", "day_of_week").dropDuplicates("week_of_year", "calendar_year").withColumn("week", yearWeekConversion)
+  private val yearWeekConversion = (col("week_of_year") - calendarDFWeekIndex) + ((col("calendar_year") - startingYear) * weeksPerYear)
+  private val calendarPreparedDF = calendarDF.drop("calendar_day", "calendar_week", "day_of_week")
+    .dropDuplicates("week_of_year", "calendar_year")
+    .withColumn("week", yearWeekConversion)
   private val productsPreparedDF = productsDF.select("prod_id", "subclass_labels", "subclass_coefficients", "prod_base_price", "pareto_weights", "margin")
   private val storePreparedDF = storesDF.drop("store_label")
   private val customersPreparedDF = customersDF.drop("start_date", "end_date")
 
 
-   private val tLogsPreparedDF = tLogsDF
-     .join(customersPreparedDF, "customer_id")
-     .join(storePreparedDF, "store_id")
-     .join(productsPreparedDF, productsPreparedDF.col("prod_id") === tLogsDF.col("prod_purch")).drop(tLogsDF.col("prod_purch"))
-     .join(calendarPreparedDF, calendarPreparedDF.col("week") === tLogsDF.col("purch_week")).drop("week")
+  private val tLogsPreparedDF = tLogsDF
+    .join(customersPreparedDF, "customer_id")
+    .join(storePreparedDF, "store_id")
+    .join(productsPreparedDF, productsPreparedDF.col("prod_id") === tLogsDF.col("prod_purch")).drop(tLogsDF.col("prod_purch"))
+    .join(calendarPreparedDF, calendarPreparedDF.col("week") === tLogsDF.col("purch_week")).drop("week")
 
+  private val weeklySalesDF = tLogsPreparedDF
+    .groupBy("purch_week", "prod_id", "store_id")
+    .agg(count("prod_id").as("total_weekly_sales"))
+    .orderBy("purch_week")
 
-   private val weeklySalesDF = tLogsPreparedDF.groupBy("purch_week", "prod_id").agg(count("prod_id").as("total_weekly_sales")).orderBy("purch_week")
+  private val tLogsWithWeeklySales = tLogsPreparedDF.join(weeklySalesDF,Seq("purch_week", "prod_id", "store_id"))
 
-   private val tLogsWithWeeklySales = tLogsPreparedDF.join(weeklySalesDF, Seq("purch_week", "prod_id"))
+//  tLogsWithWeeklySales.show()
+
+  private val baselineDF = tLogsWithWeeklySales
+    .where(col("promo_discount").isNull)
+    .withColumn("transaction",lit(1))
+    .groupBy("prod_id", "store_id")
+    .agg(approxQuantile("value_column", [0.5], 0.01.as("sales_baseline"))
+
+  baselineDF.show()
+  baselineDF.select(sum("sales_baseline")).show()
 
 }
