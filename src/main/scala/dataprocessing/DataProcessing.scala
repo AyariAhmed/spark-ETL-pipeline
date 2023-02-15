@@ -1,6 +1,6 @@
 package dataprocessing
 
-import org.apache.spark.sql.functions.{col, count, lit, sum, approxQuantile}
+import org.apache.spark.sql.functions.{col, count, expr, lit, when}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{DoubleType, IntegerType, StringType, StructField, StructType}
 
@@ -59,20 +59,41 @@ object DataProcessing extends App {
 
   private val weeklySalesDF = tLogsPreparedDF
     .groupBy("purch_week", "prod_id", "store_id")
-    .agg(count("prod_id").as("total_weekly_sales"))
+    .agg(count("*").as("total_weekly_sales"))
     .orderBy("purch_week")
 
-  private val tLogsWithWeeklySales = tLogsPreparedDF.join(weeklySalesDF,Seq("purch_week", "prod_id", "store_id"))
-
-//  tLogsWithWeeklySales.show()
+  private val tLogsWithWeeklySales = tLogsPreparedDF.join(weeklySalesDF, Seq("purch_week", "prod_id", "store_id"))
 
   private val baselineDF = tLogsWithWeeklySales
     .where(col("promo_discount").isNull)
-    .withColumn("transaction",lit(1))
     .groupBy("prod_id", "store_id")
-    .agg(approxQuantile("value_column", [0.5], 0.01.as("sales_baseline"))
+    .agg(expr("percentile_approx(total_weekly_sales, 0.5)").alias("baseline_sales"))
 
-  baselineDF.show()
-  baselineDF.select(sum("sales_baseline")).show()
+  private val tLogsWithBaselineDF = tLogsWithWeeklySales.join(baselineDF, Seq("prod_id", "store_id"))
+
+  private val tLogsWithPromoLiftDF = tLogsWithBaselineDF
+    .withColumn("promo_lift", when(col("promo_discount").isNotNull,
+      col("total_weekly_sales") / col("baseline_sales"))
+      .otherwise(lit(1)))
+    .withColumn("incremental_lift", when(col("promo_discount").isNotNull and (col("total_weekly_sales") > col("baseline_sales")),
+      col("total_weekly_sales") - col("baseline_sales")).otherwise(lit(0)))
+
+
+  private val tLogsWithPromoCatTotalSalesDF = tLogsPreparedDF
+    .filter(col("promo_cat").isNotNull)
+    .groupBy("promo_cat", "prod_id", "store_id")
+    .agg(count("*").as("total_sales_promo_cat"))
+    .withColumnRenamed("promo_cat", "promo")
+    .withColumnRenamed("prod_id", "prod")
+    .withColumnRenamed("store_id", "store")
+
+  private val promoCatJoinCondition = tLogsWithPromoCatTotalSalesDF.col("promo") === tLogsWithPromoLiftDF.col("promo_cat") and
+    tLogsWithPromoCatTotalSalesDF.col("prod") === tLogsWithPromoLiftDF.col("prod_id") and
+    tLogsWithPromoCatTotalSalesDF.col("store") === tLogsWithPromoLiftDF.col("store_id")
+
+
+  private val finalProcessedDF = tLogsWithPromoLiftDF
+    .join(tLogsWithPromoCatTotalSalesDF, promoCatJoinCondition, "left_outer")
+    .drop("promo", "store", "prod")
 
 }
