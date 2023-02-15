@@ -1,14 +1,17 @@
 package dataprocessing
 
 import org.apache.spark.sql.functions.{col, count, expr, lit, when}
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.types.{DoubleType, IntegerType, StringType, StructField, StructType}
+import com.datastax.spark.connector._
+import com.datastax.spark.connector.cql.CassandraConnector
 
 object DataProcessing extends App {
 
   private val spark = SparkSession.builder()
     .appName("DataProcessing")
     .config("spark.master", "local")
+    .config("spark.cassandra.connection.host", "localhost")
     .getOrCreate()
 
   private val transactionSchema = StructType(
@@ -76,7 +79,7 @@ object DataProcessing extends App {
       col("total_weekly_sales") / col("baseline_sales"))
       .otherwise(lit(1)))
     .withColumn("incremental_lift", when(col("promo_discount").isNotNull and (col("total_weekly_sales") > col("baseline_sales")),
-      col("total_weekly_sales") - col("baseline_sales")).otherwise(lit(0)))
+      col("total_weekly_sales") - col("baseline_sales")).otherwise(null))
 
 
   private val tLogsWithPromoCatTotalSalesDF = tLogsPreparedDF
@@ -94,6 +97,22 @@ object DataProcessing extends App {
 
   private val finalProcessedDF = tLogsWithPromoLiftDF
     .join(tLogsWithPromoCatTotalSalesDF, promoCatJoinCondition, "left_outer")
+    .na.fill("nan", Seq("promo_cat", "promo_discount"))
     .drop("promo", "store", "prod")
+
+  finalProcessedDF.show()
+
+  /*private val connector = CassandraConnector(spark.sparkContext.getConf)
+  connector.withSessionDo { session =>
+    session.execute("CREATE KEYSPACE IF NOT EXISTS challenge WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }")
+    session.execute("CREATE TABLE IF NOT EXISTS challenge.sales_data (prod_id int,  store_id int,  purch_week int, customer_id text, promo_cat int,  promo_discount double, store_pref int, price_sens int,  purch_freq int,  promo_sens int, basket_size int, repurchase_frequency int, store_address text,  store_size int, store_region int, country text,  subclass_labels text, subclass_coefficients int, prod_base_price double, pareto_weights double, margin double, calendar_month int, calendar_year int, week_of_year int, week_of_month int, total_weekly_sales bigint, baseline_sales bigint, promo_lift double,  incremental_lift bigint, total_sales_promo_cat bigint, PRIMARY KEY ((promo_cat, prod_id), store_id, purch_week))")
+  }
+  // Primary key: Given that we will be querying promo_cat and prod_id, rows with the same promo_cat and prod_id will be stored together on the same Cassandra node, which can improve query performance. The other columns in the primary key (store_id and purch_week) can be used as clustering columns to control the sort order of the data within each partition.
+
+  finalProcessedDF.write
+    .format("org.apache.spark.sql.cassandra")
+    .options(Map("table" -> "sales_data", "keyspace" -> "challenge", "confirm.truncate" -> "true"))
+    .mode(SaveMode.Overwrite)
+    .save()*/
 
 }

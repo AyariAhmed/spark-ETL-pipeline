@@ -2,7 +2,7 @@ version: '3'
 
 services:
   cassandra:
-    image: cassandra:latest
+    image: cassandra:4.0.3
     container_name: cassandra
     volumes:
       - cassandra-data:/var/lib/cassandra
