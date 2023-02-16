@@ -7,11 +7,14 @@ import com.datastax.spark.connector.cql.CassandraConnector
 
 object DataProcessing extends App {
 
+  private val CASSANDRA_HOST = "127.0.0.1"
+  private val CASSANDRA_PORT = 9042
+
   private val spark = SparkSession.builder()
     .appName("DataProcessing")
     .config("spark.master", "local")
-    .config("spark.cassandra.connection.host", "localhost")
-    .config("spark.cassandra.connection.port", "9042")
+    .config("spark.cassandra.connection.host", CASSANDRA_HOST)
+    .config("spark.cassandra.connection.port", CASSANDRA_PORT)
     .getOrCreate()
 
   private val transactionSchema = StructType(
