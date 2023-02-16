@@ -95,7 +95,7 @@ object DataProcessing extends App {
     tLogsWithPromoCatTotalSalesDF.col("store") === tLogsWithPromoLiftDF.col("store_id")
 
 
-  private val finalProcessedDF = tLogsWithPromoLiftDF
+  private val salesDataDF = tLogsWithPromoLiftDF
     .join(tLogsWithPromoCatTotalSalesDF, promoCatJoinCondition, "left_outer")
     .drop("promo", "store", "prod")
     .na.fill("none", Seq("promo_cat"))
@@ -107,7 +107,7 @@ object DataProcessing extends App {
   }
   // Primary key: Given that we will be querying promo_cat and prod_id, rows with the same promo_cat and prod_id will be stored together on the same Cassandra node, which can improve query performance. The other columns in the primary key (store_id and purch_week) can be used as clustering columns to control the sort order of the data within each partition.
 
-  finalProcessedDF.write
+  salesDataDF.write
     .format("org.apache.spark.sql.cassandra")
     .options(Map("table" -> "sales_data", "keyspace" -> "challenge", "confirm.truncate" -> "true"))
     .mode(SaveMode.Overwrite)
