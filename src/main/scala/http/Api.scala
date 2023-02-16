@@ -28,8 +28,11 @@ object Api extends App {
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
   implicit val responseDataFormat: RootJsonFormat[ResponseData] = ResponseDataJsonProtocol.responseDataFormat
 
+  private val CASSANDRA_HOST = "127.0.0.1"
+  private val CASSANDRA_PORT = 9042
+
   private val cassandraSession: CqlSession = CqlSession.builder()
-    .addContactPoint(new InetSocketAddress("127.0.0.1", 9042))
+    .addContactPoint(new InetSocketAddress(CASSANDRA_HOST , CASSANDRA_PORT))
     .withLocalDatacenter("datacenter1")
     .withKeyspace(CqlIdentifier.fromCql("challenge"))
     .build()
@@ -65,9 +68,9 @@ object Api extends App {
     }
   }
 
-  val host = "localhost"
-  val port = 8080
-  Http().newServerAt(host, port).bindFlow(route)
+  private val HOST = "localhost"
+  private val PORT = 8080
+  Http().newServerAt(HOST, PORT).bindFlow(route)
 
-  println(s"Api served at http://$host:$port/")
+  println(s"Api served at http://$HOST:$PORT/")
 }
