@@ -1,6 +1,6 @@
 package dataprocessing
 
-import org.apache.spark.sql.functions.{col, count, expr, lit, when}
+import org.apache.spark.sql.functions.{col, count, expr, lit, when, round}
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.types.{DoubleType, IntegerType, StringType, StructField, StructType}
 import com.datastax.spark.connector.cql.CassandraConnector
@@ -76,7 +76,7 @@ object DataProcessing extends App {
 
   private val tLogsWithPromoLiftDF = tLogsWithBaselineDF
     .withColumn("promo_lift", when(col("promo_discount").isNotNull,
-      col("total_weekly_sales") / col("baseline_sales"))
+      round(col("total_weekly_sales") / col("baseline_sales"), 5) )
       .otherwise(lit(1)))
     .withColumn("incremental_lift", when(col("promo_discount").isNotNull and (col("total_weekly_sales") > col("baseline_sales")),
       col("total_weekly_sales") - col("baseline_sales")).otherwise(null))
