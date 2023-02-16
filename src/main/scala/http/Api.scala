@@ -18,7 +18,7 @@ import spray.json._
 
 case class ResponseData(total_sales_promo_cat: Long, incremental_lift: Option[Long], promo_lift: Double)
 
-object MyJsonProtocol extends DefaultJsonProtocol {
+object ResponseDataJsonProtocol extends DefaultJsonProtocol {
   implicit val responseDataFormat: RootJsonFormat[ResponseData] = jsonFormat3(ResponseData)
 }
 
@@ -26,7 +26,7 @@ object Api extends App {
   implicit val system: ActorSystem = ActorSystem("API")
   implicit val materializer: Materializer = Materializer(system)
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
-  implicit val responseDataFormat: RootJsonFormat[ResponseData] = MyJsonProtocol.responseDataFormat
+  implicit val responseDataFormat: RootJsonFormat[ResponseData] = ResponseDataJsonProtocol.responseDataFormat
 
   private val cassandraSession: CqlSession = CqlSession.builder()
     .addContactPoint(new InetSocketAddress("127.0.0.1", 9042))
