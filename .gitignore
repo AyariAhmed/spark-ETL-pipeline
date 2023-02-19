@@ -2,7 +2,7 @@
 *.log
 .bsp/
 .idea/
-project/
+project/**/*
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/scala,sbt,intellij
@@ -139,3 +139,4 @@ hs_err_pid*
 
 # Keep sbt plugins file
 !project/plugins.sbt
+!project/build.properties
