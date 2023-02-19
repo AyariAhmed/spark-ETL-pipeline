@@ -31,6 +31,8 @@ services:
     environment:
       - CASSANDRA_HOST=cassandra
       - CASSANDRA_PORT=9042
+      - HOST=0.0.0.0
+      - PORT=8080
 
 volumes:
   cassandra-data:

@@ -37,7 +37,7 @@ libraryDependencies ++= Seq(
   "org.joda" % "joda-convert" % "2.2.2",
   "joda-time" % "joda-time" % "2.12.2",
   // API
-  "com.datastax.cassandra" % "cassandra-driver-core" % "4.0.0",
+  "com.datastax.cassandra" % "cassandra-driver-core" % "3.11.3",
   "com.typesafe.akka" %% "akka-http" % "10.4.0",
   "com.typesafe.akka" %% "akka-stream" % "2.7.0",
   "com.typesafe.akka" %% "akka-http-spray-json" % "10.4.0",

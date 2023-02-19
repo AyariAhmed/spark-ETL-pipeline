@@ -69,9 +69,9 @@ object Api extends App {
     }
   }
 
-  private val HOST = "localhost"
-  private val PORT = 8080
-  Http().newServerAt(HOST, PORT).bindFlow(route)
+  private val HOST = envOrElse("HOST", "127.0.0.1")
+  private val PORT = envOrElse("PORT", "8080")
+  Http().newServerAt(HOST, PORT.toInt).bindFlow(route)
 
   println(s"Api served at http://$HOST:$PORT/")
 }
