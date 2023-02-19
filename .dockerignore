@@ -1,0 +1,6 @@
+.bsp
+.idea
+project
+spark-warehouse
+target
+src/main/resources/data/**/*

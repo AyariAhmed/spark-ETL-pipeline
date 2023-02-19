@@ -18,7 +18,6 @@ dockerBaseImage := "adoptopenjdk:11-jre-hotspot"
 dockerExposedPorts ++= Seq(8080)
 dockerEnvVars ++= Map(("CASSANDRA_HOST", "cassandra"), ("CASSANDRA_PORT", "9042"))
 
-
 resolvers ++= Seq(
   "bintray-spark-packages" at "https://dl.bintray.com/spark-packages/maven",
   "Typesafe Simple Repository" at "https://repo.typesafe.com/typesafe/simple/maven-releases",

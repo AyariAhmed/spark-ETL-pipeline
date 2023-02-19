@@ -79,7 +79,7 @@ object DataProcessing extends App {
 
   private val tLogsWithPromoLiftDF = tLogsWithBaselineDF
     .withColumn("promo_lift", when(col("promo_discount").isNotNull,
-      round(col("total_weekly_sales") / col("baseline_sales"), 5) )
+      round(col("total_weekly_sales") / col("baseline_sales"), 5))
       .otherwise(lit(1)))
     .withColumn("incremental_lift", when(col("promo_discount").isNotNull and (col("total_weekly_sales") > col("baseline_sales")),
       col("total_weekly_sales") - col("baseline_sales")).otherwise(null))

@@ -30,10 +30,10 @@ object Api extends App {
   implicit val responseDataFormat: RootJsonFormat[ResponseData] = ResponseDataJsonProtocol.responseDataFormat
 
   private val CASSANDRA_HOST = envOrElse("CASSANDRA_HOST", "127.0.0.1")
-  private val CASSANDRA_PORT = envOrElse("CASSANDRA_PORT","9042")
+  private val CASSANDRA_PORT = envOrElse("CASSANDRA_PORT", "9042")
 
   private val cassandraSession: CqlSession = CqlSession.builder()
-    .addContactPoint(new InetSocketAddress(CASSANDRA_HOST , CASSANDRA_PORT.toInt))
+    .addContactPoint(new InetSocketAddress(CASSANDRA_HOST, CASSANDRA_PORT.toInt))
     .withLocalDatacenter("datacenter1")
     .withKeyspace(CqlIdentifier.fromCql("challenge"))
     .build()
