@@ -1,4 +1,4 @@
-ThisBuild / version := "0.1.0-SNAPSHOT"
+ThisBuild / version := "1.0.0"
 
 ThisBuild / scalaVersion := "2.12.10"
 
@@ -12,10 +12,11 @@ enablePlugins(
 )
 
 Compile / mainClass := Some("http.Api")
-Docker / packageName := "ayari17/akka-api:latest"
+Docker / packageName := "ayari17/akka-api"
+dockerUpdateLatest := true
 dockerBaseImage := "adoptopenjdk:11-jre-hotspot"
 dockerExposedPorts ++= Seq(8080)
-//dockerEnvVars ++= Map(("COCKROACH_HOST", "dev.localhost"), ("COCKROACH_PORT", "26257"))
+dockerEnvVars ++= Map(("CASSANDRA_HOST", "cassandra"), ("CASSANDRA_PORT", "9042"))
 
 
 resolvers ++= Seq(

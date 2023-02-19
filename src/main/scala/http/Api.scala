@@ -15,6 +15,7 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.sprayJsonMarsha
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import spray.json.DefaultJsonProtocol._
 import spray.json._
+import scala.util.Properties.envOrElse
 
 case class ResponseData(total_sales_promo_cat: Long, incremental_lift: Option[Long], promo_lift: Double)
 
@@ -28,11 +29,11 @@ object Api extends App {
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
   implicit val responseDataFormat: RootJsonFormat[ResponseData] = ResponseDataJsonProtocol.responseDataFormat
 
-  private val CASSANDRA_HOST = "127.0.0.1"
-  private val CASSANDRA_PORT = 9042
+  private val CASSANDRA_HOST = envOrElse("CASSANDRA_HOST", "127.0.0.1")
+  private val CASSANDRA_PORT = envOrElse("CASSANDRA_PORT","9042")
 
   private val cassandraSession: CqlSession = CqlSession.builder()
-    .addContactPoint(new InetSocketAddress(CASSANDRA_HOST , CASSANDRA_PORT))
+    .addContactPoint(new InetSocketAddress(CASSANDRA_HOST , CASSANDRA_PORT.toInt))
     .withLocalDatacenter("datacenter1")
     .withKeyspace(CqlIdentifier.fromCql("challenge"))
     .build()

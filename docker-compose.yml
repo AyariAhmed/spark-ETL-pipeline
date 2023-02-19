@@ -6,6 +6,11 @@ services:
     container_name: cassandra
     volumes:
       - cassandra-data:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     ports:
       - "9042:9042"
       - "9160:9160"
@@ -15,5 +20,18 @@ services:
       - CASSANDRA_DC=datacenter1
       - CASSANDRA_RACK=rack1
 
+  akka-api:
+    image: ayari17/akka-api:1.0.0
+    container_name: akka-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    environment:
+      - CASSANDRA_HOST=cassandra
+      - CASSANDRA_PORT=9042
+
 volumes:
   cassandra-data:
+    driver: local
