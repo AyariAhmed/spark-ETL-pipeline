@@ -2,12 +2,21 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalaVersion := "2.12.10"
 
-lazy val root = (project in file("."))
-  .settings(
-    name := "de-challenge"
-  )
+name := "de-challenge"
 
 val sparkVersion = "3.2.2"
+
+enablePlugins(
+  JavaAppPackaging,
+  DockerPlugin
+)
+
+Compile / mainClass := Some("http.Api")
+Docker / packageName := "ayari17/akka-api:latest"
+dockerBaseImage := "adoptopenjdk:11-jre-hotspot"
+dockerExposedPorts ++= Seq(8080)
+//dockerEnvVars ++= Map(("COCKROACH_HOST", "dev.localhost"), ("COCKROACH_PORT", "26257"))
+
 
 resolvers ++= Seq(
   "bintray-spark-packages" at "https://dl.bintray.com/spark-packages/maven",
@@ -31,5 +40,4 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http" % "10.4.0",
   "com.typesafe.akka" %% "akka-stream" % "2.7.0",
   "com.typesafe.akka" %% "akka-http-spray-json" % "10.4.0",
-
 )
