@@ -17,6 +17,10 @@ spec:
       labels:
         app: api
     spec:
+      initContainers:
+        - name: init-wait
+          image: busybox
+          command: [ 'sh', '-c', 'sleep 100' ]
       containers:
         - name: api
           image: "ayari17/akka-api:{{ .Values.deployment.container.image_tag }}"

@@ -7,7 +7,7 @@ spec:
     app: api
   type: NodePort
   ports:
-    - port: 80
-      targetPort: 8080
+    - port: 8080
+      targetPort: {{ .Values.configMap.PORT }}
       nodePort: 30002
       protocol: TCP
