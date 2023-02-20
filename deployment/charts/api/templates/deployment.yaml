@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  replicas: {{ .Values.deployment.replicas_count }}
+  selector:
+    matchLabels:
+      app: api
+  strategy:
+    rollingUpdate:
+      maxSurge: {{ .Values.deployment.max_surge }}
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: "ayari17/akka-api:{{ .Values.deployment.container.image_tag }}"
+          envFrom:
+            - configMapRef:
+                name: api-configmap

@@ -31,9 +31,12 @@ object Api extends App {
 
   private val CASSANDRA_HOST = envOrElse("CASSANDRA_HOST", "127.0.0.1")
   private val CASSANDRA_PORT = envOrElse("CASSANDRA_PORT", "9042")
+  private val CASSANDRA_USERNAME = envOrElse("CASSANDRA_USERNAME", "cassandra")
+  private val CASSANDRA_PASSWORD = envOrElse("CASSANDRA_PASSWORD", "cassandra")
 
   private val cassandraSession: CqlSession = CqlSession.builder()
     .addContactPoint(new InetSocketAddress(CASSANDRA_HOST, CASSANDRA_PORT.toInt))
+    .withAuthCredentials(CASSANDRA_USERNAME, CASSANDRA_PASSWORD)
     .withLocalDatacenter("datacenter1")
     .withKeyspace(CqlIdentifier.fromCql("challenge"))
     .build()

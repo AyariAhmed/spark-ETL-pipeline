@@ -1,0 +1,13 @@
+deployment:
+  replicas_count: 2
+  max_surge: 1
+  container:
+    image_tag: 1.0.0
+
+configMap:
+  CASSANDRA_HOST: "cassandra"
+  CASSANDRA_PORT: "9042"
+  CASSANDRA_USERNAME: "cassandra"
+  CASSANDRA_PASSWORD: "cassandra"
+  HOST: "0.0.0.0"
+  PORT: "8080"

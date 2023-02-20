@@ -19,6 +19,8 @@ services:
       - CASSANDRA_SEEDS=cassandra
       - CASSANDRA_DC=datacenter1
       - CASSANDRA_RACK=rack1
+      - CASSANDRA_USER=cassandra
+      - CASSANDRA_PASSWORD=cassandra
 
   akka-api:
     image: ayari17/akka-api:1.0.0
@@ -31,6 +33,8 @@ services:
     environment:
       - CASSANDRA_HOST=cassandra
       - CASSANDRA_PORT=9042
+      - CASSANDRA_USERNAME=cassandra
+      - CASSANDRA_PASSWORD=cassandra
       - HOST=0.0.0.0
       - PORT=8080
 

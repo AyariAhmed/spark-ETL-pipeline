@@ -1,20 +1,25 @@
 package dataprocessing
 
-import org.apache.spark.sql.functions.{col, count, expr, lit, when, round}
+import org.apache.spark.sql.functions.{col, count, expr, lit, round, when}
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.types.{DoubleType, IntegerType, StringType, StructField, StructType}
 import com.datastax.spark.connector.cql.CassandraConnector
+import scala.util.Properties.envOrElse
 
 object DataProcessing extends App {
 
-  private val CASSANDRA_HOST = "127.0.0.1"
-  private val CASSANDRA_PORT = 9042
+  private val CASSANDRA_HOST = envOrElse("CASSANDRA_HOST", "127.0.0.1")
+  private val CASSANDRA_PORT = envOrElse("CASSANDRA_PORT", "9042")
+  private val CASSANDRA_USERNAME = envOrElse("CASSANDRA_USERNAME", "cassandra")
+  private val CASSANDRA_PASSWORD = envOrElse("CASSANDRA_PASSWORD", "cassandra")
 
   private val spark = SparkSession.builder()
     .appName("DataProcessing")
     .config("spark.master", "local")
     .config("spark.cassandra.connection.host", CASSANDRA_HOST)
-    .config("spark.cassandra.connection.port", CASSANDRA_PORT)
+    .config("spark.cassandra.connection.port", CASSANDRA_PORT.toInt)
+    .config("spark.cassandra.auth.username", CASSANDRA_USERNAME)
+    .config("spark.cassandra.auth.password", CASSANDRA_PASSWORD)
     .getOrCreate()
 
   private val transactionSchema = StructType(

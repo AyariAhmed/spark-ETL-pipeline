@@ -1,0 +1,12 @@
+api:
+  deployment:
+    replicas_count: 2
+
+cassandra:
+  cluster:
+    name: cassandra-cluster
+    datacenter: datacenter1
+    rack: rack1
+  dbUser:
+    user: cassandra
+    password: "cassandra"

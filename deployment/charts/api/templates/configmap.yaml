@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-configmap
+data:
+  CASSANDRA_HOST: {{ .Values.configMap.CASSANDRA_HOST }}
+  CASSANDRA_PORT: {{ .Values.configMap.CASSANDRA_PORT }}
+  CASSANDRA_USERNAME: {{ .Values.configMap.CASSANDRA_USERNAME }}
+  CASSANDRA_PASSWORD: {{ .Values.configMap.CASSANDRA_PASSWORD }}
+  HOST: {{ .Values.configMap.HOST }}
+  PORT: {{ .Values.configMap.PORT }}
