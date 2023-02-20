@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-db
+data:
+  "01-init.cql": |
+    CREATE KEYSPACE IF NOT EXISTS challenges
+        WITH REPLICATION = {
+            'class': 'SimpleStrategy',
+            'replication_factor' : 1
+            };

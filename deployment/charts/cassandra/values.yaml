@@ -123,7 +123,7 @@ dbUser:
 
 ## @param initDBConfigMap ConfigMap with cql scripts. Useful for creating a keyspace and pre-populating data
 ##
-initDBConfigMap: ""
+initDBConfigMap: init-db
 ## @param initDBSecret Secret with cql script (with sensitive data). Useful for creating a keyspace and pre-populating data
 ##
 initDBSecret: ""
